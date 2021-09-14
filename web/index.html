@@ -13,9 +13,7 @@
   <script>
     const btn = document.getElementById("btn");
     btn.addEventListener("click", function () {
-      window.JSBridge.call("openCamera", {}, function (res) {
-        console.log(res);
-      });
+      window.JSBridge.call("showToast", "你好");
     });
   </script>
 </html>
