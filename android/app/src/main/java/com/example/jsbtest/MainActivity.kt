@@ -41,9 +41,8 @@ class MainActivity : AppCompatActivity() {
         webview.apply {
           settings.javaScriptEnabled = true
           addJavascriptInterface(WebviewInterface(), "JSBridgeApi")
+          loadUrl("http://192.168.3.4:5000/")
         }
-
-        webview.loadUrl("http://192.168.3.4:5000/")
 
     }
 }
