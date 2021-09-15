@@ -13,14 +13,21 @@ import org.json.JSONObject
 
 class MainActivity : AppCompatActivity() {
 
+    lateinit var webview: WebView
+
+    data class Params(val content: String)
+
+    data class Msg(val event: String, val params: Params,val  callbackId: String)
+
     inner class WebviewInterface {
       @JavascriptInterface
       fun showToast(msg: String){
-        Log.d("aaa", msg)
-        val msgObj = Gson().fromJson(msg, JSONObject::class.java)
-        Log.d("aaa", msgObj.toString())
-        val content = msgObj.getJSONObject("params").getString("content");
+        val msgObj = Gson().fromJson(msg, Msg::class.java)
+        val content = msgObj.params.content;
         Toast.makeText(this@MainActivity,content, Toast.LENGTH_SHORT).show()
+        webview.post {
+          webview.loadUrl("javascript:window.JSBridge.handleFromNative('${msgObj.callbackId}', 'done')")
+        }
       }
     }
 
@@ -29,7 +36,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        val webview = findViewById<WebView>(R.id.webView)
+        webview = findViewById<WebView>(R.id.webView)
 
         webview.apply {
           settings.javaScriptEnabled = true

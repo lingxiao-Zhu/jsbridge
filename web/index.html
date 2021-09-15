@@ -13,9 +13,15 @@
   <script>
     const btn = document.getElementById("btn");
     btn.addEventListener("click", function () {
-      window.JSBridge.call("showToast", {
-        content: "你好",
-      });
+      window.JSBridge.call(
+        "showToast",
+        {
+          content: "你好",
+        },
+        function (value) {
+          btn.textContent = value;
+        }
+      );
     });
   </script>
 </html>
