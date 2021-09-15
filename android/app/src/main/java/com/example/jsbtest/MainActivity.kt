@@ -8,13 +8,19 @@ import android.util.Log
 import android.webkit.JavascriptInterface
 import android.webkit.WebView
 import android.widget.Toast
+import com.google.gson.Gson
+import org.json.JSONObject
 
 class MainActivity : AppCompatActivity() {
 
     inner class WebviewInterface {
       @JavascriptInterface
-      fun showToast(content: String){
-        Toast.makeText(this@MainActivity, content, Toast.LENGTH_SHORT).show()
+      fun showToast(msg: String){
+        Log.d("aaa", msg)
+        val msgObj = Gson().fromJson(msg, JSONObject::class.java)
+        Log.d("aaa", msgObj.toString())
+        val content = msgObj.getJSONObject("params").getString("content");
+        Toast.makeText(this@MainActivity,content, Toast.LENGTH_SHORT).show()
       }
     }
 
