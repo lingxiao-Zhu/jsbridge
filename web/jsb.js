@@ -1,12 +1,22 @@
-const schema = "nativeapp://";
-const iframeCallSchema = "dispatch_message/";
-const iframeFetchSchema = "fetch_message/";
+const iframeCallSchema = "nativeapp://dispatch_message/";
+const iframeFetchSchema = "nativeapp://fetch_message/";
+/**
+ * 发送方法调用消息的iframe id
+ */
+const DISPATCH_MESSAGE_IFRAME_ID = "__JSBridgeIframe__";
+
+/**
+ * 发送方法调用队列的iframe id
+ */
+const SET_RESULT_IFRAME_ID = "__JSBridgeIframe_SetResult__";
 
 class JSBridge {
   constructor() {
     this.callbackMap = {};
     this.callbackId = 0;
     this.javascriptMessageQueue = [];
+    this.dispatchMessageIFrame = null;
+    this.setResultIFrame = null;
   }
 
   call(event, params, callback) {
@@ -29,7 +39,16 @@ class JSBridge {
       // 由于通过iframe的方式，连续发送会导致客户端接收的消息丢失，所以js端把每次的msg存在数组中，
       // 客户端收到调用的信号后手动来取
       this.javascriptMessageQueue.push(msg);
+      if (!this.dispatchMessageIFrame) {
+        this.tryCreateIFrames();
+      }
+      this.dispatchMessageIFrame.src = iframeCallSchema;
     }
+  }
+
+  tryCreateIFrames() {
+    this.dispatchMessageIFrame = this.createIFrame(DISPATCH_MESSAGE_IFRAME_ID);
+    this.setResultIFrame = this.createIFrame(SET_RESULT_IFRAME_ID);
   }
 
   /**
