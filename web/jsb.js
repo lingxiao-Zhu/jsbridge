@@ -1,5 +1,5 @@
 const iframeCallSchema = "nativeapp://dispatch_message/";
-const iframeFetchSchema = "nativeapp://fetch_message/";
+const iframeSetResultSchema = "nativeapp://set_result_message/";
 /**
  * 发送方法调用消息的iframe id
  */
@@ -51,6 +51,17 @@ class JSBridge {
     this.setResultIFrame = this.createIFrame(SET_RESULT_IFRAME_ID);
   }
 
+  createIFrame(id) {
+    let iframe = document.getElementById(id);
+    if (!iframe || iframe.tagName !== "IFRAME") {
+      iframe = document.createElement("iframe");
+      iframe.style.display = "none";
+      iframe.id = id;
+      document.documentElement.appendChild(iframe);
+    }
+    return iframe;
+  }
+
   /**
    * 处理客户端发送过来的消息
    * @param {*} callbackId
@@ -71,16 +82,18 @@ class JSBridge {
    */
   fetchMsgQueue() {
     if (this.setResultIFrame && this.javascriptMessageQueue.length > 0) {
+      /**
+       * android 4.4以下版本客户端通过result iframe获取消息队列内容
+       *
+       * 为什么base64编码前需要执行`unescape(encodeURIComponent(json))`？
+       * 详情参考：https://developer.mozilla.org/zh-CN/docs/Web/API/WindowBase64/btoa#Unicode_%E5%AD%97%E7%AC%A6%E4%B8%B2
+       */
       const json = JSON.stringify(this.javascriptMessageQueue);
       const base64 = btoa(unescape(encodeURIComponent(json)));
-      this.setResultIFrame.src = `${this.scheme}${this.setResultPath}&${base64}`;
+      this.setResultIFrame.src = `${iframeSetResultSchema}&${base64}`;
       // 清空javascript消息队列
       this.javascriptMessageQueue.splice(0, this.javascriptMessageQueue.length);
-      /**
-       * ios以及android 4.4以上版本客户端
-       * 直接通过函数返回值获取消息队列内容
-       */
-      return json;
+      // 不能有返回值，不然客户端的 loadUrl 直接返回文本展示在客户端
     }
   }
 }
